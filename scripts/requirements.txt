@@ -1,0 +1,16 @@
+# BTC Oracle - Dépendances Python
+# Installation: pip install -r requirements.txt
+
+# Data
+yfinance>=0.2.36
+pandas>=2.0.0
+
+# Machine Learning
+scikit-learn>=1.4.0
+numpy>=1.24.0
+
+# Supabase
+supabase>=2.0.0
+
+# Config
+python-dotenv>=1.0.0
