@@ -29,39 +29,51 @@ interface BTCChartProps {
   data: ChartDataPoint[]
 }
 
+interface TooltipPayloadEntry {
+  name: string
+  value: number
+  color: string
+}
+
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: TooltipPayloadEntry[]
+  label?: string
+}
+
+// Formatter pour les tooltips
+const formatPrice = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+// Custom tooltip - défini en dehors du composant pour éviter les re-renders
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  if (!active || !payload?.length) return null
+
+  return (
+    <div className="rounded-lg border bg-background p-3 shadow-lg">
+      <p className="font-medium mb-1">{label}</p>
+      {payload.map((entry, index) => (
+        <p
+          key={index}
+          className="text-sm"
+          style={{ color: entry.color }}
+        >
+          {entry.name}: {formatPrice(entry.value)}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export function BTCChart({ data }: BTCChartProps) {
   // Trouver le point de prédiction (dernier point avec predicted != null)
   const predictionPoint = data.find((d) => d.predicted !== null && d.actual === null)
-
-  // Formatter pour les tooltips
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value)
-  }
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null
-
-    return (
-      <div className="rounded-lg border bg-background p-3 shadow-lg">
-        <p className="font-medium mb-1">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <p
-            key={index}
-            className="text-sm"
-            style={{ color: entry.color }}
-          >
-            {entry.name}: {formatPrice(entry.value)}
-          </p>
-        ))}
-      </div>
-    )
-  }
 
   return (
     <div className="h-[400px] w-full">

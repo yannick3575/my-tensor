@@ -16,6 +16,40 @@ interface PredictionCardProps {
   trend?: 'up' | 'down'
 }
 
+// Icône de tendance - définie en dehors du composant pour éviter les re-renders
+function TrendIcon({ trend }: { trend?: 'up' | 'down' }) {
+  if (!trend) return null
+  return trend === 'up' ? (
+    <svg
+      className="w-5 h-5 text-green-500"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M7 17l9.2-9.2M17 17V7H7"
+      />
+    </svg>
+  ) : (
+    <svg
+      className="w-5 h-5 text-red-500"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 7l-9.2 9.2M7 7v10h10"
+      />
+    </svg>
+  )
+}
+
 export function PredictionCard({
   title,
   value,
@@ -52,45 +86,11 @@ export function PredictionCard({
       ? 'text-red-500'
       : ''
 
-  // Icône de tendance
-  const TrendIcon = () => {
-    if (!trend) return null
-    return trend === 'up' ? (
-      <svg
-        className="w-5 h-5 text-green-500"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 17l9.2-9.2M17 17V7H7"
-        />
-      </svg>
-    ) : (
-      <svg
-        className="w-5 h-5 text-red-500"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M17 7l-9.2 9.2M7 7v10h10"
-        />
-      </svg>
-    )
-  }
-
   return (
     <div
       className={cn(
         'rounded-lg border bg-card p-4 transition-colors',
-        highlight && 'border-primary bg-primary/5'
+        highlight && 'border-accent bg-accent/5'
       )}
     >
       <p className="text-sm text-muted-foreground mb-1">{title}</p>
@@ -98,7 +98,7 @@ export function PredictionCard({
         <p className={cn('text-2xl font-bold', trendColor)}>
           {formatValue(value)}
         </p>
-        <TrendIcon />
+        <TrendIcon trend={trend} />
       </div>
       {date && (
         <p className="text-xs text-muted-foreground mt-1">

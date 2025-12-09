@@ -30,7 +30,7 @@ export default function Home() {
         <div className="max-w-2xl space-y-6">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             Mon jardin numérique
-            <span className="block text-accent">d'expérimentations ML</span>
+            <span className="block text-accent">d&apos;expérimentations ML</span>
           </h1>
           <p className="mx-auto max-w-lg text-lg text-muted-foreground">
             Un espace personnel pour explorer le Machine Learning, la Data
@@ -133,20 +133,44 @@ function ProjectCard({
   tags: string[];
   status: "live" | "soon";
 }) {
-  const CardWrapper = slug ? Link : "div";
-  const cardProps = slug
-    ? { href: `/projects/${slug}` }
-    : {};
+  const baseClassName = `group relative flex flex-col rounded-xl border border-border bg-card p-6 transition-all ${
+    slug
+      ? "cursor-pointer hover:border-accent hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-1"
+      : "opacity-60"
+  }`;
+
+  if (slug) {
+    return (
+      <Link href={`/projects/${slug}`} className={baseClassName}>
+        <CardContent title={title} emoji={emoji} description={description} tags={tags} status={status} slug={slug} />
+      </Link>
+    );
+  }
 
   return (
-    <CardWrapper
-      {...(cardProps as any)}
-      className={`group relative flex flex-col rounded-xl border border-border bg-card p-6 transition-all ${
-        slug
-          ? "cursor-pointer hover:border-accent hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-1"
-          : "opacity-60"
-      }`}
-    >
+    <div className={baseClassName}>
+      <CardContent title={title} emoji={emoji} description={description} tags={tags} status={status} slug={slug} />
+    </div>
+  );
+}
+
+function CardContent({
+  title,
+  emoji,
+  description,
+  tags,
+  status,
+  slug,
+}: {
+  title: string;
+  emoji: string;
+  description: string;
+  tags: string[];
+  status: "live" | "soon";
+  slug: string | null;
+}) {
+  return (
+    <>
       {/* Status badge */}
       <span
         className={`absolute right-4 top-4 rounded-full px-2 py-1 text-xs font-medium ${
@@ -187,6 +211,6 @@ function ProjectCard({
           →
         </span>
       )}
-    </CardWrapper>
+    </>
   );
 }

@@ -95,7 +95,7 @@ export default async function BTCOraclePage() {
             </li>
             <li>
               <strong>Modèle :</strong> Une régression linéaire simple est entraînée
-              sur l'historique pour capturer la tendance.
+              sur l&apos;historique pour capturer la tendance.
             </li>
             <li>
               <strong>Prédiction :</strong> Le modèle extrapole la tendance pour
