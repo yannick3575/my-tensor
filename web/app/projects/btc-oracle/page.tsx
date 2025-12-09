@@ -49,6 +49,12 @@ export default async function BTCOraclePage() {
   // Calcul des métriques de performance
   const performanceMetrics = calculatePerformanceMetrics(predictionHistory)
 
+  // Extraire les données pour les sparklines (7 derniers jours de prix réels)
+  const sparklineData = chartData
+    .filter(d => d.actual !== null)
+    .slice(-7)
+    .map(d => d.actual as number)
+
   return (
     <main className="min-h-screen bg-slate-950">
       {/* Background gradient */}
@@ -81,6 +87,7 @@ export default async function BTCOraclePage() {
             suffix="USD"
             date={latestPrice?.date}
             index={0}
+            sparklineData={sparklineData}
           />
           <MetricCard
             title="Prédiction J+1"
@@ -89,6 +96,7 @@ export default async function BTCOraclePage() {
             date={prediction?.date}
             highlight
             index={1}
+            sparklineData={sparklineData}
           />
           <MetricCard
             title="Variation prédite"

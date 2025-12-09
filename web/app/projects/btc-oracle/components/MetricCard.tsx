@@ -14,6 +14,7 @@ import CountUp from 'react-countup'
 import { Card } from '@tremor/react'
 import { TrendingUp, TrendingDown, Calendar, Bitcoin } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Sparkline } from './Sparkline'
 
 interface MetricCardProps {
   title: string
@@ -23,6 +24,7 @@ interface MetricCardProps {
   highlight?: boolean
   trend?: 'up' | 'down'
   index?: number // Pour le stagger animation
+  sparklineData?: number[] // Données pour la mini courbe de tendance
 }
 
 export function MetricCard({
@@ -33,6 +35,7 @@ export function MetricCard({
   highlight = false,
   trend,
   index = 0,
+  sparklineData,
 }: MetricCardProps) {
   // Déterminer les couleurs selon la tendance
   const getTrendColor = () => {
@@ -166,6 +169,23 @@ export function MetricCard({
               </motion.div>
             )}
           </div>
+
+          {/* Sparkline */}
+          {sparklineData && sparklineData.length > 1 && (
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ delay: 0.4 + index * 0.1, duration: 0.5 }}
+              className="mt-3 -mx-2"
+              style={{ originX: 0 }}
+            >
+              <Sparkline
+                data={sparklineData}
+                color={trend === 'up' ? '#22c55e' : trend === 'down' ? '#ef4444' : '#3b82f6'}
+                height={36}
+              />
+            </motion.div>
+          )}
 
           {/* Date */}
           {date && (
