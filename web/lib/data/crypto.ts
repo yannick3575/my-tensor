@@ -19,7 +19,7 @@ import { CryptoMetric, ChartDataPoint, PredictionComparison, PerformanceMetrics 
  */
 export const getCryptoMetrics = unstable_cache(
   async (symbol: string = 'BTC-USD', days: number = 30): Promise<CryptoMetric[]> => {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('crypto_metrics')
@@ -64,7 +64,7 @@ export async function getChartData(
  */
 export const getLatestPrediction = unstable_cache(
   async (symbol: string = 'BTC-USD'): Promise<CryptoMetric | null> => {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('crypto_metrics')
@@ -91,7 +91,7 @@ export const getLatestPrediction = unstable_cache(
  */
 export const getLatestActualPrice = unstable_cache(
   async (symbol: string = 'BTC-USD'): Promise<CryptoMetric | null> => {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('crypto_metrics')
@@ -120,7 +120,7 @@ export const getLatestActualPrice = unstable_cache(
  */
 export const getPredictionHistory = unstable_cache(
   async (symbol: string = 'BTC-USD', limit: number = 14): Promise<PredictionComparison[]> => {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('crypto_metrics')

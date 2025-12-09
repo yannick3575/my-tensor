@@ -7,19 +7,6 @@ vi.mock('next/cache', () => ({
   unstable_cache: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
 }))
 
-// Mock next/headers
-vi.mock('next/headers', () => ({
-  cookies: vi.fn(() => Promise.resolve({
-    getAll: () => [],
-    set: vi.fn(),
-  })),
-}))
-
-// Mock @supabase/ssr
-vi.mock('@supabase/ssr', () => ({
-  createServerClient: vi.fn(),
-}))
-
 // Mock Supabase client
 vi.mock('@/lib/supabase/client', () => ({
   createClient: vi.fn(),
@@ -74,7 +61,7 @@ describe('getCryptoMetrics', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getCryptoMetrics } = await getModule()
     const result = await getCryptoMetrics()
@@ -94,7 +81,7 @@ describe('getCryptoMetrics', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getCryptoMetrics } = await getModule()
     await getCryptoMetrics('ETH-USD', 7)
@@ -111,7 +98,7 @@ describe('getCryptoMetrics', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getCryptoMetrics } = await getModule()
     await expect(getCryptoMetrics()).rejects.toThrow('Impossible de récupérer les données: Database error')
@@ -124,7 +111,7 @@ describe('getCryptoMetrics', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getCryptoMetrics } = await getModule()
     const result = await getCryptoMetrics()
@@ -144,7 +131,7 @@ describe('getChartData', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getChartData } = await getModule()
     const result = await getChartData()
@@ -177,7 +164,7 @@ describe('getLatestPrediction', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getLatestPrediction } = await getModule()
     const result = await getLatestPrediction()
@@ -196,7 +183,7 @@ describe('getLatestPrediction', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getLatestPrediction } = await getModule()
     const result = await getLatestPrediction()
@@ -219,7 +206,7 @@ describe('getLatestActualPrice', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getLatestActualPrice } = await getModule()
     const result = await getLatestActualPrice()
@@ -237,7 +224,7 @@ describe('getLatestActualPrice', () => {
     const mockSelect = vi.fn(() => ({ eq: mockEq }))
     const mockFrom = vi.fn(() => ({ select: mockSelect }))
 
-    vi.mocked(createClient).mockResolvedValue({ from: mockFrom } as unknown as Awaited<ReturnType<typeof createClient>>)
+    vi.mocked(createClient).mockReturnValue({ from: mockFrom } as unknown as ReturnType<typeof createClient>)
 
     const { getLatestActualPrice } = await getModule()
     const result = await getLatestActualPrice()

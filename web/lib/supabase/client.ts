@@ -1,14 +1,12 @@
 /**
  * Client Supabase pour Next.js 14+ App Router
  *
- * Utilise @supabase/ssr pour une intégration optimale:
- * - createClient(): Pour les Server Components (async, avec cookies)
+ * Deux clients distincts:
+ * - createClient(): Pour les Server Components (sans cookies pour compatibilité cache)
  * - createBrowserClient(): Pour les Client Components
  */
 
-import { createServerClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 import { Database } from './types'
 
 // Validation des variables d'environnement
@@ -27,31 +25,17 @@ function getEnvVars() {
 }
 
 /**
- * Client pour Server Components (App Router)
+ * Client pour Server Components
  *
- * Utilise @supabase/ssr avec gestion des cookies.
- * Note: Cette fonction est async car cookies() est async dans Next.js 15+
+ * Note: Ce client n'utilise pas de cookies pour être compatible avec unstable_cache.
+ * Pour les opérations authentifiées, utilisez createAuthClient() à la place.
  */
-export async function createClient() {
+export function createClient() {
   const { supabaseUrl, supabaseAnonKey } = getEnvVars()
-  const cookieStore = await cookies()
 
-  return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll()
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )
-        } catch {
-          // setAll est appelé depuis un Server Component
-          // où les cookies ne peuvent pas être modifiés.
-          // Ignoré car on est en lecture seule.
-        }
-      },
+  return createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
     },
   })
 }
