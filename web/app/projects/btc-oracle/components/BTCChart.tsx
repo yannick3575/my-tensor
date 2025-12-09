@@ -228,6 +228,9 @@ export function BTCChart({ data }: BTCChartProps) {
             fill="url(#actualGradient)"
             connectNulls={false}
             legendType="none"
+            isAnimationActive={true}
+            animationDuration={2000}
+            animationEasing="ease-out"
           />
 
           {/* Zone d'intervalle de confiance */}
@@ -239,6 +242,9 @@ export function BTCChart({ data }: BTCChartProps) {
               fill="url(#confidenceGradient)"
               connectNulls={false}
               legendType="none"
+              isAnimationActive={true}
+              animationDuration={2200}
+              animationEasing="ease-out"
             />
           )}
           {hasConfidenceInterval && (
@@ -250,10 +256,13 @@ export function BTCChart({ data }: BTCChartProps) {
               fillOpacity={1}
               connectNulls={false}
               legendType="none"
+              isAnimationActive={true}
+              animationDuration={2200}
+              animationEasing="ease-out"
             />
           )}
 
-          {/* Ligne du prix réel - Bleue continue */}
+          {/* Ligne du prix réel - Bleue continue avec animation */}
           <Line
             type="monotone"
             dataKey="actual"
@@ -268,9 +277,12 @@ export function BTCChart({ data }: BTCChartProps) {
               fill: '#030712',
             }}
             connectNulls={false}
+            isAnimationActive={true}
+            animationDuration={2000}
+            animationEasing="ease-out"
           />
 
-          {/* Ligne de prédiction - Cyan pointillée */}
+          {/* Ligne de prédiction - Cyan pointillée avec animation décalée */}
           <Line
             type="monotone"
             dataKey="predicted"
@@ -286,6 +298,10 @@ export function BTCChart({ data }: BTCChartProps) {
               fill: '#030712',
             }}
             connectNulls={false}
+            isAnimationActive={true}
+            animationDuration={1500}
+            animationBegin={1800}
+            animationEasing="ease-out"
           />
 
           {/* Point de prédiction mis en évidence avec glow */}

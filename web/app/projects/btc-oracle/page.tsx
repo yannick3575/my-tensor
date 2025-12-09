@@ -21,6 +21,7 @@ import { BTCChart } from './components/BTCChart'
 import { MetricCard } from './components/MetricCard'
 import { PerformanceMetrics } from './components/PerformanceMetrics'
 import { PredictionHistoryTable } from './components/PredictionHistoryTable'
+import { AnimatedBackground } from './components/AnimatedBackground'
 import { Bitcoin, TrendingUp, Activity, Info } from 'lucide-react'
 
 // Metadata pour le SEO
@@ -57,9 +58,8 @@ export default async function BTCOraclePage() {
 
   return (
     <main className="min-h-screen bg-slate-950">
-      {/* Background gradient */}
-      <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent pointer-events-none" />
+      {/* Background animé */}
+      <AnimatedBackground />
 
       <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
