@@ -12,9 +12,17 @@
 
 import { Metadata } from 'next'
 import { Suspense } from 'react'
-import { getChartData, getLatestPrediction, getLatestActualPrice } from '@/lib/data/crypto'
+import {
+  getChartData,
+  getLatestPrediction,
+  getLatestActualPrice,
+  getPredictionHistory,
+  calculatePerformanceMetrics,
+} from '@/lib/data/crypto'
 import { BTCChart } from './components/BTCChart'
 import { PredictionCard } from './components/PredictionCard'
+import { PerformanceMetrics } from './components/PerformanceMetrics'
+import { PredictionHistoryTable } from './components/PredictionHistoryTable'
 
 // Metadata pour le SEO
 export const metadata: Metadata = {
@@ -23,22 +31,25 @@ export const metadata: Metadata = {
 }
 
 // Rendu dynamique (pas de pre-rendering au build)
-// La page sera mise en cache et revalidée toutes les heures
+// Le caching est géré par unstable_cache dans lib/data/crypto.ts
 export const dynamic = 'force-dynamic'
-export const revalidate = 3600
 
 export default async function BTCOraclePage() {
   // Fetch parallèle des données (Server-side)
-  const [chartData, prediction, latestPrice] = await Promise.all([
+  const [chartData, prediction, latestPrice, predictionHistory] = await Promise.all([
     getChartData('BTC-USD', 30),
     getLatestPrediction('BTC-USD'),
     getLatestActualPrice('BTC-USD'),
+    getPredictionHistory('BTC-USD', 14),
   ])
 
   // Calcul de la variation prédite
   const priceChange = prediction && latestPrice?.actual_price
     ? ((prediction.predicted_price! - latestPrice.actual_price) / latestPrice.actual_price) * 100
     : null
+
+  // Calcul des métriques de performance
+  const performanceMetrics = calculatePerformanceMetrics(predictionHistory)
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
@@ -82,6 +93,23 @@ export default async function BTCOraclePage() {
         <Suspense fallback={<ChartSkeleton />}>
           <BTCChart data={chartData} />
         </Suspense>
+        {prediction?.prediction_lower_bound && prediction?.prediction_upper_bound && (
+          <p className="text-xs text-muted-foreground mt-4 text-center">
+            Intervalle de confiance 95% : ${prediction.prediction_lower_bound.toLocaleString()} - ${prediction.prediction_upper_bound.toLocaleString()}
+          </p>
+        )}
+      </section>
+
+      {/* Métriques de performance */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-4">Performance du modèle</h2>
+        <PerformanceMetrics metrics={performanceMetrics} />
+      </section>
+
+      {/* Historique des prédictions */}
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold mb-4">Historique des prédictions</h2>
+        <PredictionHistoryTable history={predictionHistory} />
       </section>
 
       {/* Explications */}

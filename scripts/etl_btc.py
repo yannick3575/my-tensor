@@ -30,7 +30,7 @@ import pandas as pd
 import yfinance as yf
 from dotenv import load_dotenv
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from supabase import create_client, Client
 
 # Charger les variables d'environnement
@@ -132,7 +132,7 @@ def train_model(df: pd.DataFrame) -> tuple:
     (tendance linéaire). Cela permet de prédire la "continuation de tendance".
 
     Returns:
-        (model, metrics_dict, prediction_for_tomorrow)
+        (model, metrics_dict, prediction, confidence, lower_bound, upper_bound)
     """
     print(f"\nEntraînement sur les {TRAINING_WINDOW} derniers jours...")
 
@@ -155,6 +155,7 @@ def train_model(df: pd.DataFrame) -> tuple:
 
     # Métriques
     mae = mean_absolute_error(y, y_pred_train)
+    rmse = np.sqrt(mean_squared_error(y, y_pred_train))
     r2 = r2_score(y, y_pred_train)
 
     # Prédiction pour J+1
@@ -164,27 +165,41 @@ def train_model(df: pd.DataFrame) -> tuple:
     # Calcul du score de confiance basé sur R²
     confidence = max(0, min(1, r2))  # Clamp entre 0 et 1
 
+    # Calcul de l'intervalle de confiance 95%
+    # Basé sur l'écart-type des résidus
+    residuals = y - y_pred_train
+    std_error = np.std(residuals)
+    # Intervalle 95% : ±1.96 * écart-type
+    lower_bound = prediction - 1.96 * std_error
+    upper_bound = prediction + 1.96 * std_error
+
     metrics = {
         'mae': round(mae, 2),
+        'rmse': round(rmse, 2),
         'r2': round(r2, 4),
         'coefficient': round(model.coef_[0], 4),
-        'intercept': round(model.intercept_, 2)
+        'intercept': round(model.intercept_, 2),
+        'std_error': round(std_error, 2)
     }
 
     print(f"  Coefficient (pente): {metrics['coefficient']} $/jour")
     print(f"  MAE: ${metrics['mae']}")
+    print(f"  RMSE: ${metrics['rmse']}")
     print(f"  R²: {metrics['r2']}")
     print(f"  Prédiction J+1: ${prediction:,.2f}")
+    print(f"  Intervalle 95%: [${lower_bound:,.2f} - ${upper_bound:,.2f}]")
     print(f"  Confiance: {confidence:.2%}")
 
-    return model, metrics, prediction, confidence
+    return model, metrics, prediction, confidence, lower_bound, upper_bound
 
 
 def upload_to_supabase(
     client: Client,
     df: pd.DataFrame,
     prediction: float,
-    confidence: float
+    confidence: float,
+    lower_bound: float,
+    upper_bound: float
 ) -> bool:
     """
     Upload les données historiques et la prédiction vers Supabase.
@@ -202,7 +217,9 @@ def upload_to_supabase(
             'actual_price': float(row['Close']),
             'predicted_price': None,  # Pas de prédiction pour l'historique
             'model_version': MODEL_VERSION,
-            'confidence_score': None
+            'confidence_score': None,
+            'prediction_lower_bound': None,
+            'prediction_upper_bound': None
         })
 
     # Ajouter la prédiction pour demain
@@ -213,7 +230,9 @@ def upload_to_supabase(
         'actual_price': None,  # Pas encore connu
         'predicted_price': round(prediction, 2),
         'model_version': MODEL_VERSION,
-        'confidence_score': round(confidence, 4)
+        'confidence_score': round(confidence, 4),
+        'prediction_lower_bound': round(lower_bound, 2),
+        'prediction_upper_bound': round(upper_bound, 2)
     }
 
     try:
@@ -266,10 +285,10 @@ def main():
     df = prepare_features(df)
 
     # 4. Entraînement et prédiction
-    model, metrics, prediction, confidence = train_model(df)
+    model, metrics, prediction, confidence, lower_bound, upper_bound = train_model(df)
 
     # 5. Upload vers Supabase
-    success = upload_to_supabase(client, df, prediction, confidence)
+    success = upload_to_supabase(client, df, prediction, confidence, lower_bound, upper_bound)
 
     if success:
         print("\n" + "=" * 50)

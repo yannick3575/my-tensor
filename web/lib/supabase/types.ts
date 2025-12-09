@@ -48,6 +48,8 @@ export interface Database {
           predicted_price: number | null
           model_version: string
           confidence_score: number | null
+          prediction_lower_bound: number | null
+          prediction_upper_bound: number | null
           created_at: string
         }
         Insert: {
@@ -58,6 +60,8 @@ export interface Database {
           predicted_price?: number | null
           model_version?: string
           confidence_score?: number | null
+          prediction_lower_bound?: number | null
+          prediction_upper_bound?: number | null
           created_at?: string
         }
         Update: {
@@ -67,6 +71,8 @@ export interface Database {
           predicted_price?: number | null
           model_version?: string
           confidence_score?: number | null
+          prediction_lower_bound?: number | null
+          prediction_upper_bound?: number | null
         }
       }
     }
@@ -82,4 +88,24 @@ export interface ChartDataPoint {
   date: string
   actual: number | null
   predicted: number | null
+  lowerBound: number | null
+  upperBound: number | null
+}
+
+// Type pour la comparaison prédiction vs réalité
+export interface PredictionComparison {
+  date: string
+  predicted: number
+  actual: number
+  error: number           // actual - predicted
+  errorPercent: number    // (error / actual) * 100
+  confidence: number | null
+}
+
+// Type pour les métriques de performance du modèle
+export interface PerformanceMetrics {
+  mae: number             // Mean Absolute Error
+  rmse: number            // Root Mean Squared Error
+  accuracy: number        // % de prédictions proches (< 5% erreur)
+  totalPredictions: number
 }

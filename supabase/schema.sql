@@ -58,11 +58,22 @@ CREATE TABLE IF NOT EXISTS crypto_metrics (
     predicted_price DECIMAL(18, 2),  -- Prédiction du modèle
     model_version VARCHAR(50) DEFAULT 'linear_v1',  -- Pour versionner les modèles
     confidence_score DECIMAL(5, 4),  -- Score de confiance optionnel (0-1)
+    prediction_lower_bound DECIMAL(18, 2),  -- Borne inférieure intervalle confiance 95%
+    prediction_upper_bound DECIMAL(18, 2),  -- Borne supérieure intervalle confiance 95%
     created_at TIMESTAMPTZ DEFAULT NOW(),
 
     -- Contrainte d'unicité: une seule entrée par date/symbol/version
     CONSTRAINT unique_date_symbol_version UNIQUE (date, symbol, model_version)
 );
+
+-- ============================================
+-- MIGRATION: Ajout des bornes de confiance
+-- ============================================
+-- À exécuter dans Supabase SQL Editor si la table existe déjà:
+--
+-- ALTER TABLE crypto_metrics
+-- ADD COLUMN IF NOT EXISTS prediction_lower_bound DECIMAL(18, 2),
+-- ADD COLUMN IF NOT EXISTS prediction_upper_bound DECIMAL(18, 2);
 
 -- Index composé pour les requêtes fréquentes
 CREATE INDEX idx_crypto_metrics_date_symbol ON crypto_metrics(date DESC, symbol);

@@ -12,9 +12,10 @@
  * - Il a besoin du DOM pour le rendu canvas/SVG
  */
 
+import { useMemo } from 'react'
 import {
-  LineChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,6 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceDot,
+  ComposedChart,
 } from 'recharts'
 import { ChartDataPoint } from '@/lib/supabase/types'
 
@@ -73,12 +75,22 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export function BTCChart({ data }: BTCChartProps) {
   // Trouver le point de prédiction (dernier point avec predicted != null)
-  const predictionPoint = data.find((d) => d.predicted !== null && d.actual === null)
+  // Mémoïsé pour éviter recalcul à chaque render
+  const predictionPoint = useMemo(
+    () => data.find((d) => d.predicted !== null && d.actual === null),
+    [data]
+  )
+
+  // Vérifier si on a des données d'intervalle de confiance
+  const hasConfidenceInterval = useMemo(
+    () => data.some((d) => d.lowerBound !== null && d.upperBound !== null),
+    [data]
+  )
 
   return (
     <div className="h-[400px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <ComposedChart
           data={data}
           margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
         >
@@ -118,6 +130,30 @@ export function BTCChart({ data }: BTCChartProps) {
             )}
           />
 
+          {/* Zone d'intervalle de confiance - Orange semi-transparent */}
+          {hasConfidenceInterval && (
+            <Area
+              type="monotone"
+              dataKey="upperBound"
+              stroke="none"
+              fill="hsl(25, 95%, 53%)"
+              fillOpacity={0.15}
+              name="Intervalle 95%"
+              connectNulls={false}
+            />
+          )}
+          {hasConfidenceInterval && (
+            <Area
+              type="monotone"
+              dataKey="lowerBound"
+              stroke="none"
+              fill="white"
+              fillOpacity={1}
+              legendType="none"
+              connectNulls={false}
+            />
+          )}
+
           {/* Ligne du prix réel - Bleue continue */}
           <Line
             type="monotone"
@@ -154,7 +190,7 @@ export function BTCChart({ data }: BTCChartProps) {
               strokeWidth={2}
             />
           )}
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )

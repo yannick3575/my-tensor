@@ -156,30 +156,38 @@ class TestTrainModel:
 
     def test_returns_correct_tuple(self, prepared_data):
         """Vérifie que train_model retourne le bon format."""
-        model, metrics, prediction, confidence = train_model(prepared_data)
+        model, metrics, prediction, confidence, lower_bound, upper_bound = train_model(prepared_data)
 
         assert model is not None
         assert isinstance(metrics, dict)
         assert isinstance(prediction, (int, float))
         assert isinstance(confidence, float)
+        assert isinstance(lower_bound, (int, float))
+        assert isinstance(upper_bound, (int, float))
 
     def test_metrics_keys(self, prepared_data):
         """Vérifie que les métriques contiennent les bonnes clés."""
-        _, metrics, _, _ = train_model(prepared_data)
+        _, metrics, _, _, _, _ = train_model(prepared_data)
 
-        expected_keys = ['mae', 'r2', 'coefficient', 'intercept']
+        expected_keys = ['mae', 'rmse', 'r2', 'coefficient', 'intercept', 'std_error']
         for key in expected_keys:
             assert key in metrics, f"Clé manquante: {key}"
 
     def test_confidence_range(self, prepared_data):
         """Vérifie que la confiance est entre 0 et 1."""
-        _, _, _, confidence = train_model(prepared_data)
+        _, _, _, confidence, _, _ = train_model(prepared_data)
 
         assert 0 <= confidence <= 1
 
+    def test_confidence_interval_bounds(self, prepared_data):
+        """Vérifie que lower_bound < prediction < upper_bound."""
+        _, _, prediction, _, lower_bound, upper_bound = train_model(prepared_data)
+
+        assert lower_bound < prediction < upper_bound
+
     def test_prediction_is_positive(self, prepared_data):
         """Vérifie que la prédiction est positive (prix BTC)."""
-        _, _, prediction, _ = train_model(prepared_data)
+        _, _, prediction, _, _, _ = train_model(prepared_data)
 
         assert prediction > 0
 
@@ -205,7 +213,9 @@ class TestUploadToSupabase:
             client=mock_client,
             df=prepared_data,
             prediction=45000.0,
-            confidence=0.85
+            confidence=0.85,
+            lower_bound=44000.0,
+            upper_bound=46000.0
         )
 
         assert result is True
@@ -219,7 +229,9 @@ class TestUploadToSupabase:
             client=mock_client,
             df=prepared_data,
             prediction=45000.0,
-            confidence=0.85
+            confidence=0.85,
+            lower_bound=44000.0,
+            upper_bound=46000.0
         )
 
         # Vérifie que table('crypto_metrics') est appelé
@@ -234,7 +246,9 @@ class TestUploadToSupabase:
             client=mock_client,
             df=prepared_data,
             prediction=45000.0,
-            confidence=0.85
+            confidence=0.85,
+            lower_bound=44000.0,
+            upper_bound=46000.0
         )
 
         assert result is False
@@ -249,7 +263,9 @@ class TestUploadToSupabase:
             client=mock_client,
             df=prepared_data,
             prediction=45000.0,
-            confidence=0.85
+            confidence=0.85,
+            lower_bound=44000.0,
+            upper_bound=46000.0
         )
 
         # Récupérer le dernier appel à upsert (la prédiction)
@@ -261,6 +277,8 @@ class TestUploadToSupabase:
         assert prediction_record['predicted_price'] == 45000.0
         assert prediction_record['confidence_score'] == 0.85
         assert prediction_record['actual_price'] is None
+        assert prediction_record['prediction_lower_bound'] == 44000.0
+        assert prediction_record['prediction_upper_bound'] == 46000.0
 
 
 # ============================================
