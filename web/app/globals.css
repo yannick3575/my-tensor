@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Couleurs de base */
+  /* Couleurs de base - Light mode */
   --background: #fafafa;
   --foreground: #18181b;
 
@@ -10,8 +10,8 @@
   --card-foreground: #18181b;
   --card-border: #e4e4e7;
 
-  /* Accent (vert) */
-  --accent: #16a34a;
+  /* Accent (bleu électrique) */
+  --accent: #3b82f6;
   --accent-foreground: #ffffff;
 
   /* Texte secondaire */
@@ -20,27 +20,47 @@
 
   /* Bordures */
   --border: #e4e4e7;
-  --ring: #16a34a;
+  --ring: #3b82f6;
 }
 
+/* Dark mode par défaut pour le dashboard fintech */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #fafafa;
+    --background: #030712;
+    --foreground: #f9fafb;
 
-    --card: #18181b;
-    --card-foreground: #fafafa;
-    --card-border: #27272a;
+    --card: rgba(17, 24, 39, 0.8);
+    --card-foreground: #f9fafb;
+    --card-border: rgba(75, 85, 99, 0.4);
 
-    --accent: #22c55e;
-    --accent-foreground: #0a0a0a;
+    --accent: #3b82f6;
+    --accent-foreground: #030712;
 
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
+    --muted: #1f2937;
+    --muted-foreground: #9ca3af;
 
-    --border: #27272a;
-    --ring: #22c55e;
+    --border: rgba(75, 85, 99, 0.4);
+    --ring: #3b82f6;
   }
+}
+
+/* Force dark mode quand la classe .dark est présente */
+.dark {
+  --background: #030712;
+  --foreground: #f9fafb;
+
+  --card: rgba(17, 24, 39, 0.8);
+  --card-foreground: #f9fafb;
+  --card-border: rgba(75, 85, 99, 0.4);
+
+  --accent: #3b82f6;
+  --accent-foreground: #030712;
+
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;
+
+  --border: rgba(75, 85, 99, 0.4);
+  --ring: #3b82f6;
 }
 
 @theme inline {
