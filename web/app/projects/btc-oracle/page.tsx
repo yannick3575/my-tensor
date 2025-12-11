@@ -1,13 +1,11 @@
 /**
  * Page BTC Oracle - Server Component
  *
- * Cette page utilise les Server Components de Next.js 14:
- * - Les données sont fetchées côté serveur (pas de loading state client)
- * - Meilleur SEO car le HTML est pré-rendu
- * - Les secrets restent côté serveur
- *
- * Le composant Chart est un Client Component car Recharts
- * nécessite des APIs navigateur (canvas, events, etc.)
+ * Dashboard fintech premium avec:
+ * - KPI Cards animées (Tremor + Framer Motion)
+ * - Graphique interactif (Recharts)
+ * - Métriques de performance
+ * - Historique des prédictions
  */
 
 import { Metadata } from 'next'
@@ -20,9 +18,11 @@ import {
   calculatePerformanceMetrics,
 } from '@/lib/data/crypto'
 import { BTCChart } from './components/BTCChart'
-import { PredictionCard } from './components/PredictionCard'
+import { MetricCard } from './components/MetricCard'
 import { PerformanceMetrics } from './components/PerformanceMetrics'
 import { PredictionHistoryTable } from './components/PredictionHistoryTable'
+import { AnimatedBackground } from './components/AnimatedBackground'
+import { Bitcoin, TrendingUp, Activity, Info } from 'lucide-react'
 
 // Metadata pour le SEO
 export const metadata: Metadata = {
@@ -31,7 +31,6 @@ export const metadata: Metadata = {
 }
 
 // Rendu dynamique (pas de pre-rendering au build)
-// Le caching est géré par unstable_cache dans lib/data/crypto.ts
 export const dynamic = 'force-dynamic'
 
 export default async function BTCOraclePage() {
@@ -51,98 +50,159 @@ export default async function BTCOraclePage() {
   // Calcul des métriques de performance
   const performanceMetrics = calculatePerformanceMetrics(predictionHistory)
 
+  // Extraire les données pour les sparklines (7 derniers jours de prix réels)
+  const sparklineData = chartData
+    .filter(d => d.actual !== null)
+    .slice(-7)
+    .map(d => d.actual as number)
+
   return (
-    <main className="container mx-auto px-4 py-8 max-w-5xl">
-      {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-4xl">🔮</span>
-          <h1 className="text-3xl font-bold tracking-tight">BTC Oracle</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Prédiction du cours Bitcoin à J+1 via régression linéaire
-        </p>
-      </header>
+    <main className="min-h-screen bg-slate-950">
+      {/* Background animé */}
+      <AnimatedBackground />
 
-      {/* Cartes de métriques */}
-      <section className="grid gap-4 md:grid-cols-3 mb-8">
-        <PredictionCard
-          title="Prix actuel"
-          value={latestPrice?.actual_price}
-          suffix="USD"
-          date={latestPrice?.date}
-        />
-        <PredictionCard
-          title="Prédiction J+1"
-          value={prediction?.predicted_price}
-          suffix="USD"
-          date={prediction?.date}
-          highlight
-        />
-        <PredictionCard
-          title="Variation prédite"
-          value={priceChange}
-          suffix="%"
-          trend={priceChange ? (priceChange > 0 ? 'up' : 'down') : undefined}
-        />
-      </section>
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
+        {/* Header */}
+        <header className="mb-10">
+          <div className="flex items-center gap-4 mb-3">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/20">
+              <Bitcoin className="w-8 h-8 text-blue-400" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-100">
+                BTC Oracle
+              </h1>
+              <p className="text-slate-400 text-sm">
+                Prédiction du cours Bitcoin à J+1 via régression linéaire
+              </p>
+            </div>
+          </div>
+        </header>
 
-      {/* Graphique */}
-      <section className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Historique & Prédiction</h2>
-        <Suspense fallback={<ChartSkeleton />}>
-          <BTCChart data={chartData} />
-        </Suspense>
-        {prediction?.prediction_lower_bound && prediction?.prediction_upper_bound && (
-          <p className="text-xs text-muted-foreground mt-4 text-center">
-            Intervalle de confiance 95% : ${prediction.prediction_lower_bound.toLocaleString()} - ${prediction.prediction_upper_bound.toLocaleString()}
-          </p>
-        )}
-      </section>
+        {/* KPI Cards Grid */}
+        <section className="grid gap-4 md:grid-cols-3 mb-8">
+          <MetricCard
+            title="Prix actuel"
+            value={latestPrice?.actual_price}
+            suffix="USD"
+            date={latestPrice?.date}
+            index={0}
+            sparklineData={sparklineData}
+          />
+          <MetricCard
+            title="Prédiction J+1"
+            value={prediction?.predicted_price}
+            suffix="USD"
+            date={prediction?.date}
+            highlight
+            index={1}
+            sparklineData={sparklineData}
+          />
+          <MetricCard
+            title="Variation prédite"
+            value={priceChange}
+            suffix="%"
+            trend={priceChange ? (priceChange > 0 ? 'up' : 'down') : undefined}
+            index={2}
+          />
+        </section>
 
-      {/* Métriques de performance */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Performance du modèle</h2>
-        <PerformanceMetrics metrics={performanceMetrics} />
-      </section>
+        {/* Graphique */}
+        <section className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Activity className="w-5 h-5 text-blue-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-slate-100">
+                Historique & Prédiction
+              </h2>
+            </div>
+            {prediction?.confidence_score != null && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-xs text-slate-400">
+                  Confiance: {(prediction.confidence_score * 100).toFixed(0)}%
+                </span>
+              </div>
+            )}
+          </div>
 
-      {/* Historique des prédictions */}
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Historique des prédictions</h2>
-        <PredictionHistoryTable history={predictionHistory} />
-      </section>
+          <Suspense fallback={<ChartSkeleton />}>
+            <BTCChart data={chartData} />
+          </Suspense>
 
-      {/* Explications */}
-      <section className="mt-8 rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Comment ça marche ?</h2>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ol className="space-y-2 text-muted-foreground">
-            <li>
-              <strong>Collecte :</strong> Un script Python récupère les 30 derniers
-              jours de données BTC-USD via Yahoo Finance.
-            </li>
-            <li>
-              <strong>Modèle :</strong> Une régression linéaire simple est entraînée
-              sur l&apos;historique pour capturer la tendance.
-            </li>
-            <li>
-              <strong>Prédiction :</strong> Le modèle extrapole la tendance pour
-              prédire le prix de demain.
-            </li>
-          </ol>
-          <p className="mt-4 text-sm text-muted-foreground/80 italic">
+          {prediction?.prediction_lower_bound && prediction?.prediction_upper_bound && (
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+              <Info className="w-3 h-3" />
+              <span>
+                Intervalle de confiance 95% : ${prediction.prediction_lower_bound.toLocaleString()} - ${prediction.prediction_upper_bound.toLocaleString()}
+              </span>
+            </div>
+          )}
+        </section>
+
+        {/* Métriques de performance */}
+        <section className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-100">
+              Performance du modèle
+            </h2>
+          </div>
+          <PerformanceMetrics metrics={performanceMetrics} />
+        </section>
+
+        {/* Historique des prédictions */}
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-slate-100 mb-4">
+            Historique des prédictions
+          </h2>
+          <PredictionHistoryTable history={predictionHistory} />
+        </section>
+
+        {/* Explications */}
+        <section className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6 mb-8">
+          <h2 className="text-lg font-semibold text-slate-100 mb-4">
+            Comment ça marche ?
+          </h2>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
+                1
+              </div>
+              <p className="text-sm text-slate-400">
+                <strong className="text-slate-300">Collecte :</strong> Un script Python récupère les 30 derniers
+                jours de données BTC-USD via Yahoo Finance.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
+                2
+              </div>
+              <p className="text-sm text-slate-400">
+                <strong className="text-slate-300">Modèle :</strong> Une régression linéaire simple est entraînée
+                sur l&apos;historique pour capturer la tendance.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center text-xs font-bold text-blue-400">
+                3
+              </div>
+              <p className="text-sm text-slate-400">
+                <strong className="text-slate-300">Prédiction :</strong> Le modèle extrapole la tendance pour
+                prédire le prix de demain.
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs text-slate-500 italic border-t border-slate-700/50 pt-4">
             Note : Ce modèle est volontairement simpliste à des fins pédagogiques.
             Les marchés financiers sont complexes et imprévisibles.
           </p>
-        </div>
-      </section>
-
-      {/* Footer avec confiance */}
-      {prediction?.confidence_score != null && (
-        <footer className="mt-4 text-center text-sm text-muted-foreground">
-          Score de confiance du modèle : {(prediction.confidence_score * 100).toFixed(1)}%
-        </footer>
-      )}
+        </section>
+      </div>
     </main>
   )
 }
@@ -150,6 +210,6 @@ export default async function BTCOraclePage() {
 // Skeleton pour le chargement du graphique
 function ChartSkeleton() {
   return (
-    <div className="h-[400px] w-full animate-pulse rounded bg-muted" />
+    <div className="h-[400px] w-full animate-pulse rounded-xl bg-slate-800/50" />
   )
 }
